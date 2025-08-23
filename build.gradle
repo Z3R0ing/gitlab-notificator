@@ -24,7 +24,7 @@ configurations {
 
 // Telegram Bot API Version
 ext {
-	telegrambotsVersion = '6.9.7.1'
+	telegrambotsVersion = '9.0.0'
 }
 
 repositories {
@@ -46,7 +46,8 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 
 	// Telegram Bot API
-	implementation "org.telegram:telegrambots-spring-boot-starter:${telegrambotsVersion}"
+	implementation "org.telegram:telegrambots-springboot-longpolling-starter:${telegrambotsVersion}"
+	implementation "org.telegram:telegrambots-client:${telegrambotsVersion}"
 
 	// Tests
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
