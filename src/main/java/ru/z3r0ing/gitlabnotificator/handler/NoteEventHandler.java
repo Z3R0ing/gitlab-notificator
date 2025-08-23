@@ -53,13 +53,13 @@ public class NoteEventHandler implements EventHandler {
         String message = messageFormatter.formatNewCommentForMr(projectName, mergeRequestTitle, authorName);
 
         // Identify who should receive notifications about this comment
-        List<User> recipients = getNotificationRecipients(mergeRequest, noteEvent.getUser());
+        List<Long> recipients = getNotificationRecipients(mergeRequest, noteEvent.getUser());
 
         // Create individual notification events for each recipient
         List<HandledEvent> handledEvents = new ArrayList<>();
-        for (User recipient : recipients) {
+        for (Long recipientId : recipients) {
             handledEvents.add(new HandledEvent(
-                    recipient.getId(),
+                    recipientId,
                     new MessageWithKeyboard(message, keyboard)
             ));
         }
@@ -73,24 +73,25 @@ public class NoteEventHandler implements EventHandler {
      *
      * @param mergeRequest the merge request that was commented on
      * @param commentAuthor the user who created the comment
-     * @return list of users who should receive notifications
+     * @return list of Gitlab users ID who should receive notifications
      */
-    private List<User> getNotificationRecipients(MergeRequest mergeRequest, User commentAuthor) {
-        List<User> recipients = new ArrayList<>();
+    private List<Long> getNotificationRecipients(MergeRequest mergeRequest, User commentAuthor) {
+        List<Long> recipients = new ArrayList<>();
 
-        User assignee = mergeRequest.getAssignee();
+        Long assigneeId = mergeRequest.getAssigneeId();
 
         // Add assignee if they exist and are not the comment author
-        if (assignee != null &&
-                !assignee.getId().equals(commentAuthor.getId())) {
-            recipients.add(assignee);
+        if (assigneeId != null &&
+                !assigneeId.equals(commentAuthor.getId())) {
+            recipients.add(assigneeId);
         }
 
+        // FIXME Gitlab Webhooks send MR without reviewers for Note Event
         // Add reviewers who are not the comment author
         if (mergeRequest.getReviewers() != null) {
             for (User reviewer : mergeRequest.getReviewers()) {
                 if (!reviewer.getId().equals(commentAuthor.getId())) {
-                    recipients.add(reviewer);
+                    recipients.add(reviewer.getId());
                 }
             }
         }
