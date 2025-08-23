@@ -58,12 +58,10 @@ public class PipelineEventHandler implements EventHandler {
             String failedMessage = messageFormatter.formatPipelineFailed(projectName, pipelineName);
             MessageWithKeyboard messageWithKeyboard = new MessageWithKeyboard(failedMessage, keyboard);
 
-            // If pipeline is related to MR, notify assignee
+            // If pipeline is related to MR, notify action user
             if (pipelineEvent.getMergeRequest() != null) {
-                User assignee = pipelineEvent.getMergeRequest().getAssignee();
-                if (assignee != null) {
-                    return Collections.singletonList(new HandledEvent(assignee.getId(), messageWithKeyboard));
-                }
+                User actionUser = pipelineEvent.getUser();
+                return Collections.singletonList(new HandledEvent(actionUser.getId(), messageWithKeyboard));
             } else {
                 // If not related to MR, send impersonal notification
                 return Collections.singletonList(new HandledEvent(null, messageWithKeyboard));
