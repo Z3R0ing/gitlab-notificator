@@ -29,7 +29,7 @@ public class GitlabEventService {
     public void handleEvent(String eventTypeRaw, String payload) {
         EventType eventType;
         try {
-            eventType = EventType.valueOf(eventTypeRaw);
+            eventType = EventType.fromRequestHeader(eventTypeRaw);
         } catch (IllegalArgumentException iae) {
             log.warn("Unsupported GitLab event: {}", eventTypeRaw);
             log.debug("Unsupported GitLab webhook payload: {}", payload);

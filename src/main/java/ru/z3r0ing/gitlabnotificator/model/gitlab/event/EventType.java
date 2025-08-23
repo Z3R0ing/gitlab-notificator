@@ -13,4 +13,13 @@ public enum EventType {
     TAG_PUSH("Tag Push Hook");
 
     private final String requestHeader;
+
+    public static EventType fromRequestHeader(String requestHeader) {
+        for (EventType eventType : EventType.values()) {
+            if (eventType.getRequestHeader().equals(requestHeader))
+                return eventType;
+        }
+        throw new IllegalArgumentException("No such enum constant " + requestHeader);
+    }
+
 }
