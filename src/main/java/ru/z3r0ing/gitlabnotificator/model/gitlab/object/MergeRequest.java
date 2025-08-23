@@ -24,6 +24,9 @@ public class MergeRequest {
     @JsonProperty("target_branch")
     private String targetBranch;
 
+    @JsonProperty("assignee_id")
+    private Long assigneeId;
+
     private User assignee;
 
     private List<User> reviewers;

@@ -24,6 +24,7 @@ public class PipelineEvent extends AbstractEvent {
 
     private Project project;
 
+    @JsonProperty("object_attributes")
     private Pipeline pipeline;
 
     @JsonProperty("merge_request")

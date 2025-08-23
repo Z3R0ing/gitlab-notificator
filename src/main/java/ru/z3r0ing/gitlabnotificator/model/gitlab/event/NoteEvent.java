@@ -22,6 +22,7 @@ public class NoteEvent extends AbstractEvent {
 
     private Project project;
 
+    @JsonProperty("object_attributes")
     private Note note;
 
     @JsonProperty("merge_request")
