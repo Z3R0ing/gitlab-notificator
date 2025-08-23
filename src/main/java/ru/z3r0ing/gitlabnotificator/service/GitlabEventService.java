@@ -32,7 +32,7 @@ public class GitlabEventService {
             eventType = EventType.valueOf(eventTypeRaw);
         } catch (IllegalArgumentException iae) {
             log.warn("Unsupported GitLab event: {}", eventTypeRaw);
-            log.warn("Unsupported GitLab webhook payload: {}", payload);
+            log.debug("Unsupported GitLab webhook payload: {}", payload);
             return;
         }
 
@@ -45,6 +45,7 @@ public class GitlabEventService {
                     handledEventList.forEach(this::sendEventNotification);
                 } catch (JsonProcessingException e) {
                     log.error("Error processing GitLab event payload for event type: {}", eventType, e);
+                    log.debug("Bad GitLab webhook payload: {}", payload);
                 }
                 break;
             }
