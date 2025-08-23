@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.lang.Nullable;
-import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Issue;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.MergeRequest;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Note;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Project;
@@ -28,10 +27,6 @@ public class NoteEvent extends AbstractEvent {
     @JsonProperty("merge_request")
     @Nullable
     private MergeRequest mergeRequest;
-
-    @JsonProperty("issue")
-    @Nullable
-    private Issue issue;
 
     @Override
     @JsonIgnore

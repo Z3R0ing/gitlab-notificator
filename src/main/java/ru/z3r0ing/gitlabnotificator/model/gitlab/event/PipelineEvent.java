@@ -41,7 +41,7 @@ public class PipelineEvent extends AbstractEvent {
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
-    static class Stages {
+    public static class Stages {
         private Long id;
         private String stage;
         private String status;

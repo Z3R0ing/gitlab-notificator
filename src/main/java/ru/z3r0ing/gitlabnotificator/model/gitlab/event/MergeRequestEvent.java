@@ -42,15 +42,15 @@ public class MergeRequestEvent extends AbstractEvent {
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
-    static class Changes {
+    public static class Changes {
         @Nullable
         private DraftChanges draft;
     }
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
-    static class DraftChanges {
-        private String previous;
-        private String current;
+    public static class DraftChanges {
+        private Boolean previous;
+        private Boolean current;
     }
 }

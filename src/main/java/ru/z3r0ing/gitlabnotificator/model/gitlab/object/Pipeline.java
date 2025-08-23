@@ -11,7 +11,9 @@ public class Pipeline {
 
     private String status;
 
-    private String ref;
+    private String name;
+
+    private String url;
 
     @JsonProperty("source")
     private String triggerSource;
