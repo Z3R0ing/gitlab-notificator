@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gitlab-notificator
+  datasource:
+    url: jdbc:h2:file:./data/gitlabnotificator;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+app:
+  telegram:
+    bot-username: ${TG_BOT_USERNAME:gitlab_notifier_bot}
+    bot-token: ${TG_BOT_TOKEN:CHANGE_ME}
+  gitlab:
+    webhook-secret: ${GITLAB_WEBHOOK_SECRET:CHANGE_ME}
+
+logging:
+  level:
+    ru.z3r0ing.gitlabnotificator: DEBUG
