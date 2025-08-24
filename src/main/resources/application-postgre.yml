@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gitlab-notificator
+  datasource:
+    url: jdbc:postgresql://localhost:5432/gitlabnotificator
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  h2:
+    console:
+      enabled: false
+
+app:
+  telegram:
+    bot-username: ${TG_BOT_USERNAME:gitlab_notifier_bot}
+    bot-token: ${TG_BOT_TOKEN:CHANGE_ME}
+  gitlab:
+    webhook-secret: ${GITLAB_WEBHOOK_SECRET:CHANGE_ME}
+
+logging:
+  level:
+    ru.z3r0ing.gitlabnotificator: DEBUG
