@@ -11,5 +11,6 @@ import org.springframework.lang.Nullable;
 public class HandledEvent {
     @Nullable
     Long gitlabUserReceiverId;
+
     MessageWithKeyboard messageWithKeyboard;
 }

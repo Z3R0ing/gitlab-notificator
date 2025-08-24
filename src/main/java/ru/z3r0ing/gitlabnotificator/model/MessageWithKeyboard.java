@@ -11,5 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 public class MessageWithKeyboard {
     private String message;
+
     private List<InlineKeyboardButtonRow> keyboard;
 }

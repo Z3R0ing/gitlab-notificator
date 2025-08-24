@@ -28,7 +28,7 @@ public class TelegramService {
                     .text(text)
                     .parseMode("Markdown");
 
-            // Добавляем кнопки, если они есть
+            // Added keyboard if specified
             if (buttons != null && !buttons.isEmpty()) {
                 InlineKeyboardMarkup markup = createInlineKeyboardMarkup(buttons);
                 messageBuilder.replyMarkup(markup);
@@ -36,9 +36,9 @@ public class TelegramService {
 
             SendMessage message = messageBuilder.build();
             telegramClient.execute(message);
-            log.debug("Сообщение отправлено в чат {}: {}", chatId, text);
+            log.debug("Message send to a chat {}: {}", chatId, text);
         } catch (TelegramApiException e) {
-            log.error("Ошибка при отправке сообщения в чат {}: {}", chatId, e.getMessage(), e);
+            log.error("Error sending message to a chat {}: {}", chatId, e.getMessage(), e);
         }
     }
 

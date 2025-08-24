@@ -38,7 +38,7 @@ public class AnalyticsSchedule {
     private LocalTime timeOfDay;
 
     @Column(nullable = false)
-    private String timezone; // Default will be set in data.sql
+    private String timezone;
 
     @Override
     public final boolean equals(Object o) {

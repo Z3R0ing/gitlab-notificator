@@ -71,7 +71,7 @@ public class NoteEventHandler implements EventHandler {
      * Determines the recipients who should be notified about a new comment.
      * Includes assignee and reviewers of the merge request, excluding the comment author.
      *
-     * @param mergeRequest the merge request that was commented on
+     * @param mergeRequest  the merge request that was commented on
      * @param commentAuthor the user who created the comment
      * @return list of Gitlab users ID who should receive notifications
      */
