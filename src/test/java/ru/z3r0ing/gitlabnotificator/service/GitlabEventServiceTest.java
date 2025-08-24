@@ -10,8 +10,8 @@ import org.springframework.context.ApplicationContext;
 import ru.z3r0ing.gitlabnotificator.handler.EventHandler;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
 import ru.z3r0ing.gitlabnotificator.model.MessageWithKeyboard;
-import ru.z3r0ing.gitlabnotificator.model.UserMapping;
 import ru.z3r0ing.gitlabnotificator.model.UserRole;
+import ru.z3r0ing.gitlabnotificator.model.entity.UserMapping;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.repository.UserMappingRepository;
 
