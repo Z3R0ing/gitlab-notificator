@@ -53,7 +53,7 @@ public class PipelineEventHandler implements EventHandler {
         String pipelineStatus = pipelineEvent.getPipeline().getStatus();
         if ("failed".equalsIgnoreCase(pipelineStatus)) {
             String projectName = pipelineEvent.getProject().getName();
-            String pipelineName = pipelineEvent.getPipeline().getName();
+            String pipelineName = pipelineEvent.getPipeline().getRef();
 
             String failedMessage = messageFormatter.formatPipelineFailed(projectName, pipelineName);
             MessageWithKeyboard messageWithKeyboard = new MessageWithKeyboard(failedMessage, keyboard);
@@ -80,7 +80,7 @@ public class PipelineEventHandler implements EventHandler {
         String pipelineStatus = pipelineEvent.getPipeline().getStatus();
         if ("success".equalsIgnoreCase(pipelineStatus) && isDeployPipeline(pipelineEvent)) {
             String projectName = pipelineEvent.getProject().getName();
-            String pipelineName = pipelineEvent.getPipeline().getName();
+            String pipelineName = pipelineEvent.getPipeline().getRef();
             String deployedMessage = messageFormatter.formatPipelineDeployed(projectName, pipelineName);
             MessageWithKeyboard messageWithKeyboard = new MessageWithKeyboard(deployedMessage, keyboard);
             return Collections.singletonList(new HandledEvent(null, messageWithKeyboard));
