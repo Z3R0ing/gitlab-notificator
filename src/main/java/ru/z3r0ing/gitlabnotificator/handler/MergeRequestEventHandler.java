@@ -170,7 +170,7 @@ public class MergeRequestEventHandler implements EventHandler {
             String projectName = mergeRequestEvent.getProject().getName();
             String mergeRequestTitle = mergeRequest.getTitle();
             User actionUser = mergeRequestEvent.getUser();
-            User assignee = mergeRequest.getAssignee();
+            Long assigneeId = mergeRequest.getAssigneeId();
 
             String mrApprovedMessage = messageFormatter.formatMrApproved(
                     projectName,
@@ -179,8 +179,8 @@ public class MergeRequestEventHandler implements EventHandler {
             );
 
             // Notify assignee if exists and not action user
-            if (assignee != null && !actionUser.getId().equals(assignee.getId())) {
-                handledEventList.add(new HandledEvent(assignee.getId(),
+            if (assigneeId != null && !actionUser.getId().equals(assigneeId)) {
+                handledEventList.add(new HandledEvent(assigneeId,
                         new MessageWithKeyboard(mrApprovedMessage, keyboard)));
             }
 
@@ -207,7 +207,7 @@ public class MergeRequestEventHandler implements EventHandler {
             String projectName = mergeRequestEvent.getProject().getName();
             String mergeRequestTitle = mergeRequest.getTitle();
             User actionUser = mergeRequestEvent.getUser();
-            User assignee = mergeRequest.getAssignee();
+            Long assigneeId = mergeRequest.getAssigneeId();
 
             String mrMergedMessage = messageFormatter.formatMrMerged(
                     projectName,
@@ -216,8 +216,8 @@ public class MergeRequestEventHandler implements EventHandler {
             );
 
             // Notify assignee if exists and not action user
-            if (assignee != null && !actionUser.getId().equals(assignee.getId())) {
-                handledEventList.add(new HandledEvent(assignee.getId(),
+            if (assigneeId != null && !actionUser.getId().equals(assigneeId)) {
+                handledEventList.add(new HandledEvent(assigneeId,
                         new MessageWithKeyboard(mrMergedMessage, keyboard)));
             }
 
