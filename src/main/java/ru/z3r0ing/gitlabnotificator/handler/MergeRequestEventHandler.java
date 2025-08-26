@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
 import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.model.MessageWithKeyboard;
@@ -20,7 +21,7 @@ import java.util.List;
 /**
  * Handler for processing merge request events from GitLab webhook.
  * Handles various MR events like creation, draft removal, reviewer assignment,
- * approval and merging.
+ * approved and merging.
  */
 @Component
 @RequiredArgsConstructor
@@ -69,7 +70,7 @@ public class MergeRequestEventHandler implements EventHandler {
         handledEventList.addAll(handleOpenAction(mergeRequestEvent, keyboard));
         handledEventList.addAll(handleDraftRemoval(mergeRequestEvent, keyboard));
         handledEventList.addAll(handleReviewerAssignment(mergeRequestEvent, keyboard));
-        handledEventList.addAll(handleApprovalAction(mergeRequestEvent, keyboard));
+        handledEventList.addAll(handleApprovedAction(mergeRequestEvent, keyboard));
         handledEventList.addAll(handleMergeAction(mergeRequestEvent, keyboard));
 
         return handledEventList;
@@ -156,14 +157,14 @@ public class MergeRequestEventHandler implements EventHandler {
     }
 
     /**
-     * Handles MR approval - notify assignee and send impersonal notification.
+     * Handles MR approved - notify assignee and send impersonal notification.
      *
      * @param mergeRequestEvent the event
      * @param keyboard          keyboard with merge request link
      */
-    private List<HandledEvent> handleApprovalAction(MergeRequestEvent mergeRequestEvent, List<InlineKeyboardButtonRow> keyboard) {
+    private List<HandledEvent> handleApprovedAction(MergeRequestEvent mergeRequestEvent, List<InlineKeyboardButtonRow> keyboard) {
         MergeRequest mergeRequest = mergeRequestEvent.getMergeRequest();
-        if ("approval".equalsIgnoreCase(mergeRequest.getAction())) {
+        if ("approved".equalsIgnoreCase(mergeRequest.getAction())) {
             List<HandledEvent> handledEventList = new ArrayList<>();
 
             String projectName = mergeRequestEvent.getProject().getName();
