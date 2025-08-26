@@ -45,6 +45,8 @@ public class MergeRequestEvent extends AbstractEvent {
     public static class Changes {
         @Nullable
         private DraftChanges draft;
+        @Nullable
+        private ReviewersChanges reviewers;
     }
 
     @Data
@@ -52,5 +54,12 @@ public class MergeRequestEvent extends AbstractEvent {
     public static class DraftChanges {
         private Boolean previous;
         private Boolean current;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ReviewersChanges {
+        private List<User> previous;
+        private List<User> current;
     }
 }

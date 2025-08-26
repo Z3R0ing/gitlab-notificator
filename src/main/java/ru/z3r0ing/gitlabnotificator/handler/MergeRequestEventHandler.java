@@ -130,8 +130,8 @@ public class MergeRequestEventHandler implements EventHandler {
      * @param keyboard          keyboard with merge request link
      */
     private List<HandledEvent> handleReviewerAssignment(MergeRequestEvent mergeRequestEvent, List<InlineKeyboardButtonRow> keyboard) {
-        List<User> newReviewers = mergeRequestEvent.getReviewers();
-        if (newReviewers != null) {
+        List<User> newReviewers = getMergeRequestNewReviewers(mergeRequestEvent);
+        if (!CollectionUtils.isEmpty(newReviewers)) {
             List<HandledEvent> handledEventList = new ArrayList<>();
             User actionUser = mergeRequestEvent.getUser();
             for (User reviewer : newReviewers) {
@@ -226,6 +226,18 @@ public class MergeRequestEventHandler implements EventHandler {
                     new MessageWithKeyboard(mrMergedMessage, keyboard)));
 
             return handledEventList;
+        }
+        return Collections.emptyList();
+    }
+
+    private List<User> getMergeRequestNewReviewers(MergeRequestEvent mergeRequestEvent) {
+        if ("open".equals(mergeRequestEvent.getMergeRequest().getAction())
+                && mergeRequestEvent.getReviewers() != null) {
+            return mergeRequestEvent.getReviewers();
+        }
+        if (mergeRequestEvent.getChanges() != null
+                && mergeRequestEvent.getChanges().getReviewers() != null) {
+            return mergeRequestEvent.getChanges().getReviewers().getCurrent();
         }
         return Collections.emptyList();
     }
