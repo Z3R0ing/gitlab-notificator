@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
 import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.model.MessageWithKeyboard;
+import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.PipelineEvent;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.User;
@@ -63,8 +64,10 @@ public class PipelineEventHandler implements EventHandler {
                 User actionUser = pipelineEvent.getUser();
                 return Collections.singletonList(new HandledEvent(actionUser.getId(), messageWithKeyboard));
             } else {
-                // If not related to MR, send impersonal notification
-                return Collections.singletonList(new HandledEvent(null, messageWithKeyboard));
+                // If not related to MR, create notification for LEAD
+                List<HandledEvent> handledEventList = new ArrayList<>();
+                handledEventList.add(new HandledEvent(UserRole.LEAD, messageWithKeyboard));
+                return handledEventList;
             }
         }
         return Collections.emptyList();
@@ -83,7 +86,11 @@ public class PipelineEventHandler implements EventHandler {
             String pipelineName = pipelineEvent.getPipeline().getRef();
             String deployedMessage = messageFormatter.formatPipelineDeployed(projectName, pipelineName);
             MessageWithKeyboard messageWithKeyboard = new MessageWithKeyboard(deployedMessage, keyboard);
-            return Collections.singletonList(new HandledEvent(null, messageWithKeyboard));
+            // Create notification for LEAD and PM
+            List<HandledEvent> handledEventList = new ArrayList<>();
+            handledEventList.add(new HandledEvent(UserRole.LEAD, messageWithKeyboard));
+            handledEventList.add(new HandledEvent(UserRole.PM, messageWithKeyboard));
+            return handledEventList;
         }
         return Collections.emptyList();
     }
