@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
 import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
+import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.TagPushEvent;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Project;
@@ -64,8 +65,11 @@ class TagPushEventHandlerTest {
         List<HandledEvent> result = handler.formatMessageForEvent(payload);
 
         // Then
-        assertThat(result).hasSize(1);
+        assertThat(result).hasSize(2);
         assertThat(result.get(0).getGitlabUserReceiverId()).isNull();
+        assertThat(result.get(0).getUserRole()).isEqualTo(UserRole.LEAD);
+        assertThat(result.get(1).getGitlabUserReceiverId()).isNull();
+        assertThat(result.get(1).getUserRole()).isEqualTo(UserRole.PM);
         verify(messageFormatter).formatNewTag("Test Project", "v1.0.0");
         verify(messageFormatter).buttonsForTag("http://gitlab/-/tags/v1.0.0");
     }

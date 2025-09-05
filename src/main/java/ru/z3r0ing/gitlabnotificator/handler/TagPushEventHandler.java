@@ -7,11 +7,12 @@ import org.springframework.stereotype.Component;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
 import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.model.MessageWithKeyboard;
+import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.TagPushEvent;
 import ru.z3r0ing.gitlabnotificator.util.MessageFormatter;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,8 +37,12 @@ public class TagPushEventHandler implements EventHandler {
         String message = messageFormatter.formatNewTag(projectName, tagName);
         List<InlineKeyboardButtonRow> keyboard = messageFormatter.buttonsForTag(tagUrl);
 
-        return Collections.singletonList(new HandledEvent(null,
-                new MessageWithKeyboard(message, keyboard)));
+        // Create notification for LEAD and PM
+        List<HandledEvent> handledEventList = new ArrayList<>();
+        MessageWithKeyboard messageWithKeyboard = new MessageWithKeyboard(message, keyboard);
+        handledEventList.add(new HandledEvent(UserRole.LEAD, messageWithKeyboard));
+        handledEventList.add(new HandledEvent(UserRole.PM, messageWithKeyboard));
+        return handledEventList;
     }
 
     @Override
