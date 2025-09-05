@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
 import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
+import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.MergeRequestEvent;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.MergeRequest;
@@ -130,13 +131,15 @@ class MergeRequestEventHandlerTest {
         MergeRequestEvent.Changes changes = new MergeRequestEvent.Changes();
         event.setChanges(changes);
 
+        MergeRequestEvent.ReviewersChanges reviewersChanges = new MergeRequestEvent.ReviewersChanges();
         User reviewer1 = new User();
         reviewer1.setId(1L);
         reviewer1.setName("Reviewer 1");
         User reviewer2 = new User();
         reviewer2.setId(2L);
         reviewer2.setName("Reviewer 2");
-        event.setReviewers(List.of(reviewer1, reviewer2));
+        reviewersChanges.setCurrent(List.of(reviewer1, reviewer2));
+        changes.setReviewers(reviewersChanges);
 
         event.getMergeRequest().setAction("update");
 
@@ -185,7 +188,7 @@ class MergeRequestEventHandlerTest {
     void formatMessageForEvent_ShouldHandleApprovalAction() throws JsonProcessingException {
         // Given
         MergeRequestEvent event = createBasicMergeRequestEvent();
-        event.getMergeRequest().setAction("approval");
+        event.getMergeRequest().setAction("approved");
 
         MergeRequestEvent.Changes changes = new MergeRequestEvent.Changes();
         event.setChanges(changes);
@@ -194,6 +197,7 @@ class MergeRequestEventHandlerTest {
         assignee.setId(2L);
         assignee.setName("Assignee");
         event.getMergeRequest().setAssignee(assignee);
+        event.getMergeRequest().setAssigneeId(assignee.getId());
 
         String payload = objectMapper.writeValueAsString(event);
 
@@ -209,6 +213,7 @@ class MergeRequestEventHandlerTest {
         assertThat(result).hasSize(2); // One for assignee, one impersonal
         assertThat(result.get(0).getGitlabUserReceiverId()).isEqualTo(2L); // Assignee notification
         assertThat(result.get(1).getGitlabUserReceiverId()).isNull(); // Impersonal notification
+        assertThat(result.get(1).getUserRole()).isEqualTo(UserRole.LEAD); // Impersonal notification to LEAD
         verify(messageFormatter).formatMrApproved("Test Project", "Test MR", "Test User");
         verify(messageFormatter, times(1)).buttonsForMr("http://gitlab/test");
     }
@@ -217,7 +222,7 @@ class MergeRequestEventHandlerTest {
     void formatMessageForEvent_ShouldHandleApprovalActionWithoutAssignee() throws JsonProcessingException {
         // Given
         MergeRequestEvent event = createBasicMergeRequestEvent();
-        event.getMergeRequest().setAction("approval");
+        event.getMergeRequest().setAction("approved");
         event.getMergeRequest().setAssignee(null);
 
         MergeRequestEvent.Changes changes = new MergeRequestEvent.Changes();
@@ -236,6 +241,7 @@ class MergeRequestEventHandlerTest {
         // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getGitlabUserReceiverId()).isNull();
+        assertThat(result.get(0).getUserRole()).isEqualTo(UserRole.LEAD); // Impersonal notification to LEAD
         verify(messageFormatter).formatMrApproved("Test Project", "Test MR", "Test User");
         verify(messageFormatter, times(1)).buttonsForMr("http://gitlab/test");
     }
@@ -244,6 +250,7 @@ class MergeRequestEventHandlerTest {
     void formatMessageForEvent_ShouldHandleMergeAction() throws JsonProcessingException {
         // Given
         MergeRequestEvent event = createBasicMergeRequestEvent();
+        //event.getMergeRequest().setState("merged");
         event.getMergeRequest().setAction("merge");
 
         MergeRequestEvent.Changes changes = new MergeRequestEvent.Changes();
@@ -253,6 +260,7 @@ class MergeRequestEventHandlerTest {
         assignee.setId(2L);
         assignee.setName("Assignee");
         event.getMergeRequest().setAssignee(assignee);
+        event.getMergeRequest().setAssigneeId(assignee.getId());
 
         String payload = objectMapper.writeValueAsString(event);
 
@@ -265,9 +273,12 @@ class MergeRequestEventHandlerTest {
         List<HandledEvent> result = handler.formatMessageForEvent(payload);
 
         // Then
-        assertThat(result).hasSize(2); // One for assignee, one impersonal
+        assertThat(result).hasSize(3); // One for assignee, one impersonal
         assertThat(result.get(0).getGitlabUserReceiverId()).isEqualTo(2L); // Assignee notification
         assertThat(result.get(1).getGitlabUserReceiverId()).isNull(); // Impersonal notification
+        assertThat(result.get(1).getUserRole()).isEqualTo(UserRole.LEAD); // Impersonal notification to LEAD
+        assertThat(result.get(2).getGitlabUserReceiverId()).isNull(); // Impersonal notification
+        assertThat(result.get(2).getUserRole()).isEqualTo(UserRole.PM); // Impersonal notification to PM
         verify(messageFormatter).formatMrMerged("Test Project", "Test MR", "Test User");
         verify(messageFormatter, times(1)).buttonsForMr("http://gitlab/test");
     }
