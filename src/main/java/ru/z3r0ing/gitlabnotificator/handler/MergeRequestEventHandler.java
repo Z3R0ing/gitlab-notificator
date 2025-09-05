@@ -8,6 +8,7 @@ import org.springframework.util.CollectionUtils;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
 import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.model.MessageWithKeyboard;
+import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.MergeRequestEvent;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.MergeRequest;
@@ -93,7 +94,8 @@ public class MergeRequestEventHandler implements EventHandler {
                     mergeRequestTitle,
                     actionUser.getName()
             );
-            return Collections.singletonList(new HandledEvent(null,
+            // Create notification for LEAD
+            return Collections.singletonList(new HandledEvent(UserRole.LEAD,
                     new MessageWithKeyboard(newMrMessage, keyboard)));
         }
         return Collections.emptyList();
@@ -116,7 +118,8 @@ public class MergeRequestEventHandler implements EventHandler {
                         projectName,
                         mergeRequestTitle
                 );
-                return Collections.singletonList(new HandledEvent(null,
+                // Create notification for LEAD
+                return Collections.singletonList(new HandledEvent(UserRole.LEAD,
                         new MessageWithKeyboard(mrUndraftMessage, keyboard)));
             }
         }
@@ -184,8 +187,8 @@ public class MergeRequestEventHandler implements EventHandler {
                         new MessageWithKeyboard(mrApprovedMessage, keyboard)));
             }
 
-            // Send impersonal notification
-            handledEventList.add(new HandledEvent(null,
+            // Create notification for LEAD
+            handledEventList.add(new HandledEvent(UserRole.LEAD,
                     new MessageWithKeyboard(mrApprovedMessage, keyboard)));
 
             return handledEventList;
@@ -215,15 +218,16 @@ public class MergeRequestEventHandler implements EventHandler {
                     actionUser.getName()
             );
 
+            MessageWithKeyboard messageWithKeyboard = new MessageWithKeyboard(mrMergedMessage, keyboard);
+
             // Notify assignee if exists and not action user
             if (assigneeId != null && !actionUser.getId().equals(assigneeId)) {
-                handledEventList.add(new HandledEvent(assigneeId,
-                        new MessageWithKeyboard(mrMergedMessage, keyboard)));
+                handledEventList.add(new HandledEvent(assigneeId, messageWithKeyboard));
             }
 
-            // Send impersonal notification
-            handledEventList.add(new HandledEvent(null,
-                    new MessageWithKeyboard(mrMergedMessage, keyboard)));
+            // Create notification for LEAD and PM
+            handledEventList.add(new HandledEvent(UserRole.LEAD, messageWithKeyboard));
+            handledEventList.add(new HandledEvent(UserRole.PM, messageWithKeyboard));
 
             return handledEventList;
         }
