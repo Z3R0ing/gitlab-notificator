@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
 import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
+import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.IssueEvent;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Project;
@@ -81,8 +82,10 @@ class IssueEventHandlerTest {
         List<HandledEvent> result = handler.formatMessageForEvent(payload);
 
         // Then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getGitlabUserReceiverId()).isNull();
+        assertThat(result).hasSize(2);
+        assertThat(result).allMatch(handledEvent -> handledEvent.getGitlabUserReceiverId() == null);
+        assertThat(result).anyMatch(handledEvent -> handledEvent.getUserRole() == UserRole.LEAD);
+        assertThat(result).anyMatch(handledEvent -> handledEvent.getUserRole() == UserRole.PM);
         verify(messageFormatter).formatNewIssue("Test Project", "Test Issue", "Test User");
         verify(messageFormatter).buttonsForIssue("http://gitlab/issue/1");
     }

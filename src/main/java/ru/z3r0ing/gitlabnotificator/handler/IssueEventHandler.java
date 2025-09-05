@@ -7,10 +7,12 @@ import org.springframework.stereotype.Component;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
 import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.model.MessageWithKeyboard;
+import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.IssueEvent;
 import ru.z3r0ing.gitlabnotificator.util.MessageFormatter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,8 +47,12 @@ public class IssueEventHandler implements EventHandler {
             String message = messageFormatter.formatNewIssue(projectName, issueTitle, issueAuthor);
             List<InlineKeyboardButtonRow> keyboard = messageFormatter.buttonsForIssue(issueUrl);
 
-            return Collections.singletonList(new HandledEvent(null,
-                    new MessageWithKeyboard(message, keyboard)));
+            // create notification for LEAD and PM
+            List<HandledEvent> handledEvents = new ArrayList<>();
+            MessageWithKeyboard messageWithKeyboard = new MessageWithKeyboard(message, keyboard);
+            handledEvents.add(new HandledEvent(UserRole.LEAD, messageWithKeyboard));
+            handledEvents.add(new HandledEvent(UserRole.PM, messageWithKeyboard));
+            return handledEvents;
         }
 
         return Collections.emptyList();
