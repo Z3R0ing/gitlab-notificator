@@ -55,7 +55,7 @@ class GitlabEventServiceTest {
 
     @Test
     void handleEvent_SupportedEventType_NoHandlers_ShouldDoNothing() {
-        String eventType = EventType.ISSUE.name();
+        String eventType = EventType.ISSUE.getRequestHeader();
         String payload = "{}";
         when(applicationContext.getBeansOfType(EventHandler.class)).thenReturn(Collections.emptyMap());
 
@@ -66,7 +66,7 @@ class GitlabEventServiceTest {
 
     @Test
     void handleEvent_HandlerThrowsJsonProcessingException_ShouldLogError() throws JsonProcessingException {
-        String eventType = EventType.ISSUE.name();
+        String eventType = EventType.ISSUE.getRequestHeader();
         String payload = "invalid_json";
         EventHandler mockHandler = mock(EventHandler.class);
         when(mockHandler.doesSupportSuchEvent(EventType.ISSUE)).thenReturn(true);
@@ -81,9 +81,9 @@ class GitlabEventServiceTest {
 
     @Test
     void handleEvent_ValidEventHandler_ShouldSendNotifications() throws JsonProcessingException {
-        String eventType = EventType.ISSUE.name();
+        String eventType = EventType.ISSUE.getRequestHeader();
         String payload = "{}";
-        HandledEvent handledEvent = new HandledEvent(null, new MessageWithKeyboard("test", Collections.emptyList()));
+        HandledEvent handledEvent = new HandledEvent(UserRole.LEAD, new MessageWithKeyboard("test", Collections.emptyList()));
         EventHandler mockHandler = mock(EventHandler.class);
         when(mockHandler.doesSupportSuchEvent(EventType.ISSUE)).thenReturn(true);
         when(mockHandler.formatMessageForEvent(payload)).thenReturn(Collections.singletonList(handledEvent));
@@ -100,7 +100,7 @@ class GitlabEventServiceTest {
 
     @Test
     void handleEvent_UserMappingNotFound_ShouldLogWarning() throws JsonProcessingException {
-        String eventType = EventType.NOTE.name();
+        String eventType = EventType.NOTE.getRequestHeader();
         String payload = "{}";
         HandledEvent handledEvent = new HandledEvent(999L, new MessageWithKeyboard("test", Collections.emptyList()));
         EventHandler mockHandler = mock(EventHandler.class);
@@ -117,7 +117,7 @@ class GitlabEventServiceTest {
 
     @Test
     void handleEvent_WithUserReceiver_ShouldSendToSpecificUser() throws JsonProcessingException {
-        String eventType = EventType.NOTE.name();
+        String eventType = EventType.NOTE.getRequestHeader();
         String payload = "{}";
         HandledEvent handledEvent = new HandledEvent(100L, new MessageWithKeyboard("test", Collections.emptyList()));
         EventHandler mockHandler = mock(EventHandler.class);
@@ -136,9 +136,9 @@ class GitlabEventServiceTest {
 
     @Test
     void handleEvent_WithoutUserReceiver_ShouldSendToLeads() throws JsonProcessingException {
-        String eventType = EventType.ISSUE.name();
+        String eventType = EventType.ISSUE.getRequestHeader();
         String payload = "{}";
-        HandledEvent handledEvent = new HandledEvent(null, new MessageWithKeyboard("test", Collections.emptyList()));
+        HandledEvent handledEvent = new HandledEvent(UserRole.LEAD, new MessageWithKeyboard("test", Collections.emptyList()));
         EventHandler mockHandler = mock(EventHandler.class);
         when(mockHandler.doesSupportSuchEvent(EventType.ISSUE)).thenReturn(true);
         when(mockHandler.formatMessageForEvent(payload)).thenReturn(Collections.singletonList(handledEvent));

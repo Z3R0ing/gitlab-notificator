@@ -12,5 +12,18 @@ public class HandledEvent {
     @Nullable
     Long gitlabUserReceiverId;
 
+    @Nullable
+    UserRole userRole;
+
     MessageWithKeyboard messageWithKeyboard;
+
+    public HandledEvent(@Nullable Long gitlabUserReceiverId, MessageWithKeyboard messageWithKeyboard) {
+        this.gitlabUserReceiverId = gitlabUserReceiverId;
+        this.messageWithKeyboard = messageWithKeyboard;
+    }
+
+    public HandledEvent(@Nullable UserRole userRole, MessageWithKeyboard messageWithKeyboard) {
+        this.userRole = userRole;
+        this.messageWithKeyboard = messageWithKeyboard;
+    }
 }

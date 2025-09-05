@@ -53,17 +53,23 @@ public class GitlabEventService {
     }
 
     private void sendEventNotification(HandledEvent handledEvent) {
-        if (handledEvent.getGitlabUserReceiverId() == null) {
-            List<UserMapping> leads = userMappingRepository.findAllByRole(UserRole.LEAD);
-            for (UserMapping lead : leads) {
-                telegramService.sendMarkdownMessage(lead.getTelegramId(),
+        Long gitlabUserReceiverId = handledEvent.getGitlabUserReceiverId();
+        if (gitlabUserReceiverId == null) {
+            UserRole userRole = handledEvent.getUserRole();
+            if (userRole == null) {
+                throw new IllegalArgumentException("Need at least 'userRole' or 'gitlabUserReceiverId'");
+            }
+            List<UserMapping> allByRole = userMappingRepository.findAllByRole(userRole);
+            for (UserMapping user : allByRole) {
+                telegramService.sendMarkdownMessage(user.getTelegramId(),
                         handledEvent.getMessageWithKeyboard().getMessage(),
                         handledEvent.getMessageWithKeyboard().getKeyboard());
             }
         } else {
-            Optional<UserMapping> optionalUser = userMappingRepository.findByGitlabUserId(handledEvent.getGitlabUserReceiverId());
+            Optional<UserMapping> optionalUser =
+                    userMappingRepository.findByGitlabUserId(gitlabUserReceiverId);
             if (optionalUser.isEmpty()) {
-                log.warn("User mapping not found for GitLab user ID: {}", handledEvent.getGitlabUserReceiverId());
+                log.warn("User mapping not found for GitLab user ID: {}", gitlabUserReceiverId);
                 return;
             }
             UserMapping user = optionalUser.get();
