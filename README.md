@@ -1,6 +1,6 @@
 # GitLab Notificator
 
-A Spring Boot application that sends real-time notifications from GitLab to Telegram, helping developers and team leads stay updated about project activities.
+A Spring Boot application that sends real-time notifications from GitLab to Telegram, helping developers, team leads and project managers stay updated about project activities.
 
 ## Features
 
@@ -13,8 +13,9 @@ A Spring Boot application that sends real-time notifications from GitLab to Tele
     - Deployment notifications
 
 - **Role-based notifications**:
-    - Developers receive notifications about their assigned MRs and reviews
+    - Developers receive notifications about their assigned MRs and reviews, also about successful deployment
     - Team leads receive all important project notifications
+    - PMs receive notifications about new issues and about successful deployment
 
 - **Telegram integration**:
     - Markdown formatted messages with emojis
