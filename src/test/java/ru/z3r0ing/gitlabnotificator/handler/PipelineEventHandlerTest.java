@@ -99,11 +99,13 @@ class PipelineEventHandlerTest {
         List<HandledEvent> result = handler.formatMessageForEvent(payload);
 
         // Then
-        assertThat(result).hasSize(2);
+        assertThat(result).hasSize(3);
         assertThat(result.get(0).getGitlabUserReceiverId()).isNull();
         assertThat(result.get(0).getUserRole()).isEqualTo(UserRole.LEAD);
         assertThat(result.get(1).getGitlabUserReceiverId()).isNull();
         assertThat(result.get(1).getUserRole()).isEqualTo(UserRole.PM);
+        assertThat(result.get(2).getGitlabUserReceiverId()).isNull();
+        assertThat(result.get(2).getUserRole()).isEqualTo(UserRole.DEV);
         verify(messageFormatter).formatPipelineDeployed("Test Project", "branch_name");
         verify(messageFormatter).buttonsForPipeline("http://gitlab/pipeline/1");
     }

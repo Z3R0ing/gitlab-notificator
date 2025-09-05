@@ -86,10 +86,11 @@ public class PipelineEventHandler implements EventHandler {
             String pipelineName = pipelineEvent.getPipeline().getRef();
             String deployedMessage = messageFormatter.formatPipelineDeployed(projectName, pipelineName);
             MessageWithKeyboard messageWithKeyboard = new MessageWithKeyboard(deployedMessage, keyboard);
-            // Create notification for LEAD and PM
+            // Create notification for LEAD, PM and DEV
             List<HandledEvent> handledEventList = new ArrayList<>();
             handledEventList.add(new HandledEvent(UserRole.LEAD, messageWithKeyboard));
             handledEventList.add(new HandledEvent(UserRole.PM, messageWithKeyboard));
+            handledEventList.add(new HandledEvent(UserRole.DEV, messageWithKeyboard));
             return handledEventList;
         }
         return Collections.emptyList();
