@@ -9,9 +9,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
 import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
+import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.PipelineEvent;
-import ru.z3r0ing.gitlabnotificator.model.gitlab.object.MergeRequest;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Pipeline;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Project;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.User;
@@ -54,37 +54,6 @@ class PipelineEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleFailedPipelineWithAssignee() throws JsonProcessingException {
-        // Given
-        PipelineEvent event = createBasicPipelineEvent();
-        event.getPipeline().setStatus("failed");
-
-        // Create merge request with assignee
-        MergeRequest mergeRequest = new MergeRequest();
-        User assignee = new User();
-        assignee.setId(1L);
-        assignee.setName("Assignee");
-        mergeRequest.setAssignee(assignee);
-        event.setMergeRequest(mergeRequest);
-
-        String payload = objectMapper.writeValueAsString(event);
-
-        String expectedMessage = "Pipeline failed";
-        List<InlineKeyboardButtonRow> keyboard = createMockKeyboard();
-        when(messageFormatter.formatPipelineFailed(anyString(), anyString())).thenReturn(expectedMessage);
-        when(messageFormatter.buttonsForPipeline("http://gitlab/pipeline/1")).thenReturn(keyboard);
-
-        // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
-
-        // Then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getGitlabUserReceiverId()).isEqualTo(1L);
-        verify(messageFormatter).formatPipelineFailed("Test Project", "Test Pipeline");
-        verify(messageFormatter).buttonsForPipeline("http://gitlab/pipeline/1");
-    }
-
-    @Test
     void formatMessageForEvent_ShouldHandleFailedPipelineWithoutMergeRequest() throws JsonProcessingException {
         // Given
         PipelineEvent event = createBasicPipelineEvent();
@@ -104,34 +73,7 @@ class PipelineEventHandlerTest {
         // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getGitlabUserReceiverId()).isNull();
-        verify(messageFormatter).formatPipelineFailed("Test Project", "Test Pipeline");
-        verify(messageFormatter).buttonsForPipeline("http://gitlab/pipeline/1");
-    }
-
-    @Test
-    void formatMessageForEvent_ShouldNotHandleFailedPipelineWithMergeRequestButNoAssignee() throws JsonProcessingException {
-        // Given
-        PipelineEvent event = createBasicPipelineEvent();
-        event.getPipeline().setStatus("failed");
-
-        // Create merge request without assignee
-        MergeRequest mergeRequest = new MergeRequest();
-        mergeRequest.setAssignee(null);
-        event.setMergeRequest(mergeRequest);
-
-        String payload = objectMapper.writeValueAsString(event);
-
-        String expectedMessage = "Pipeline failed";
-        List<InlineKeyboardButtonRow> keyboard = createMockKeyboard();
-        when(messageFormatter.formatPipelineFailed(anyString(), anyString())).thenReturn(expectedMessage);
-        when(messageFormatter.buttonsForPipeline("http://gitlab/pipeline/1")).thenReturn(keyboard);
-
-        // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
-
-        // Then
-        assertThat(result).isEmpty();
-        verify(messageFormatter).formatPipelineFailed("Test Project", "Test Pipeline");
+        verify(messageFormatter).formatPipelineFailed("Test Project", "branch_name");
         verify(messageFormatter).buttonsForPipeline("http://gitlab/pipeline/1");
     }
 
@@ -157,9 +99,12 @@ class PipelineEventHandlerTest {
         List<HandledEvent> result = handler.formatMessageForEvent(payload);
 
         // Then
-        assertThat(result).hasSize(1);
+        assertThat(result).hasSize(2);
         assertThat(result.get(0).getGitlabUserReceiverId()).isNull();
-        verify(messageFormatter).formatPipelineDeployed("Test Project", "Test Pipeline");
+        assertThat(result.get(0).getUserRole()).isEqualTo(UserRole.LEAD);
+        assertThat(result.get(1).getGitlabUserReceiverId()).isNull();
+        assertThat(result.get(1).getUserRole()).isEqualTo(UserRole.PM);
+        verify(messageFormatter).formatPipelineDeployed("Test Project", "branch_name");
         verify(messageFormatter).buttonsForPipeline("http://gitlab/pipeline/1");
     }
 
@@ -222,15 +167,20 @@ class PipelineEventHandlerTest {
     private PipelineEvent createBasicPipelineEvent() {
         PipelineEvent event = new PipelineEvent();
 
+        User actionUser = new User();
+        actionUser.setId(1L);
+        actionUser.setName("Test user");
+        event.setUser(actionUser);
+
         Project project = new Project();
         project.setName("Test Project");
         event.setProject(project);
 
         Pipeline pipeline = new Pipeline();
         pipeline.setId(1L);
-        pipeline.setName("Test Pipeline");
         pipeline.setStatus("failed");
         pipeline.setUrl("http://gitlab/pipeline/1");
+        pipeline.setRef("branch_name");
         event.setPipeline(pipeline);
 
         // Default stages - empty list
