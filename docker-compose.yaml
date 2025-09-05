@@ -1,0 +1,15 @@
+services:
+  gitlabnotificator:
+    build: .
+    container_name: gitlab-notificator
+    restart: always
+    environment:
+      - TG_BOT_TOKEN=${TG_BOT_TOKEN}
+      - TG_BOT_USERNAME=${TG_BOT_USERNAME}
+      - GITLAB_WEBHOOK_SECRET=${GITLAB_WEBHOOK_SECRET}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    ports:
+      - ${HOST_IP}:${HOST_PORT}:8080
