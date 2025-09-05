@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'ru.z3r0ing'
-version = '0.0.1-SNAPSHOT'
+version = '0.1.0-SNAPSHOT'
 description = 'Gitlab Notificator App'
 
 java {
