@@ -1,4 +1,4 @@
-package ru.z3r0ing.gitlabnotificator.model;
+package ru.z3r0ing.gitlabnotificator.model.telegram;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
