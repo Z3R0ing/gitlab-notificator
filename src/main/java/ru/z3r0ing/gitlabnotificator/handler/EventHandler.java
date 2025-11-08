@@ -15,7 +15,7 @@ public interface EventHandler {
      * @return List of HandledEvent objects containing formatted messages and recipient information
      * @throws JsonProcessingException if payload cannot be parsed
      */
-    List<HandledEvent> formatMessageForEvent(String payload) throws JsonProcessingException;
+    List<HandledEvent> handleEvent(String payload) throws JsonProcessingException;
 
     /**
      * Checks if this handler supports the given event type.

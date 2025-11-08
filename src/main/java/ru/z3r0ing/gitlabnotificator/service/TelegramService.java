@@ -9,7 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
+import ru.z3r0ing.gitlabnotificator.model.telegram.InlineKeyboardButtonRow;
 
 import java.util.ArrayList;
 import java.util.List;

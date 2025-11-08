@@ -8,13 +8,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
-import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.MergeRequestEvent;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.MergeRequest;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Project;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.User;
+import ru.z3r0ing.gitlabnotificator.model.telegram.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.util.MessageFormatter;
 
 import java.util.List;
@@ -53,21 +53,21 @@ class MergeRequestEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldReturnEmptyListForClosedMergeRequest() throws JsonProcessingException {
+    void handleClosedMergeRequest() throws JsonProcessingException {
         // Given
         MergeRequestEvent event = createBasicMergeRequestEvent();
         event.getMergeRequest().setState("closed");
         String payload = objectMapper.writeValueAsString(event);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).isEmpty();
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleOpenMergeRequest() throws JsonProcessingException {
+    void handleEvent_ShouldHandleOpenMergeRequest() throws JsonProcessingException {
         // Given
         MergeRequestEvent event = createBasicMergeRequestEvent();
         event.getMergeRequest().setAction("open");
@@ -83,7 +83,7 @@ class MergeRequestEventHandlerTest {
         when(messageFormatter.buttonsForMr("http://gitlab/test")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(1);
@@ -93,7 +93,7 @@ class MergeRequestEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleDraftRemoval() throws JsonProcessingException {
+    void handleEvent_ShouldHandleDraftRemoval() throws JsonProcessingException {
         // Given
         MergeRequestEvent event = createBasicMergeRequestEvent();
 
@@ -113,7 +113,7 @@ class MergeRequestEventHandlerTest {
         when(messageFormatter.buttonsForMr("http://gitlab/test")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(1);
@@ -124,7 +124,7 @@ class MergeRequestEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleReviewerAssignment() throws JsonProcessingException {
+    void handleEvent_ShouldHandleReviewerAssignment() throws JsonProcessingException {
         // Given
         MergeRequestEvent event = createBasicMergeRequestEvent();
 
@@ -151,7 +151,7 @@ class MergeRequestEventHandlerTest {
         when(messageFormatter.buttonsForMr("http://gitlab/test")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(2);
@@ -161,7 +161,7 @@ class MergeRequestEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldSkipReviewerAssignmentWhenReviewerIsActionUser() throws JsonProcessingException {
+    void handleEvent_ShouldSkipReviewerAssignmentWhenReviewerIsActionUser() throws JsonProcessingException {
         // Given
         MergeRequestEvent event = createBasicMergeRequestEvent();
 
@@ -178,14 +178,14 @@ class MergeRequestEventHandlerTest {
         String payload = objectMapper.writeValueAsString(event);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).isEmpty();
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleApprovalAction() throws JsonProcessingException {
+    void handleEvent_ShouldHandleApprovalAction() throws JsonProcessingException {
         // Given
         MergeRequestEvent event = createBasicMergeRequestEvent();
         event.getMergeRequest().setAction("approved");
@@ -207,7 +207,7 @@ class MergeRequestEventHandlerTest {
         when(messageFormatter.buttonsForMr("http://gitlab/test")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(2); // One for assignee, one impersonal
@@ -219,7 +219,7 @@ class MergeRequestEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleApprovalActionWithoutAssignee() throws JsonProcessingException {
+    void handleEvent_ShouldHandleApprovalActionWithoutAssignee() throws JsonProcessingException {
         // Given
         MergeRequestEvent event = createBasicMergeRequestEvent();
         event.getMergeRequest().setAction("approved");
@@ -236,7 +236,7 @@ class MergeRequestEventHandlerTest {
         when(messageFormatter.buttonsForMr("http://gitlab/test")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(1);
@@ -247,7 +247,7 @@ class MergeRequestEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleMergeAction() throws JsonProcessingException {
+    void handleEvent_ShouldHandleMergeAction() throws JsonProcessingException {
         // Given
         MergeRequestEvent event = createBasicMergeRequestEvent();
         //event.getMergeRequest().setState("merged");
@@ -270,7 +270,7 @@ class MergeRequestEventHandlerTest {
         when(messageFormatter.buttonsForMr("http://gitlab/test")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(3); // One for assignee, one impersonal
@@ -284,12 +284,12 @@ class MergeRequestEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleInvalidJson() {
+    void handleEvent_ShouldHandleInvalidJson() {
         // Given
         String invalidPayload = "invalid json";
 
         // When & Then
-        assertThatThrownBy(() -> handler.formatMessageForEvent(invalidPayload))
+        assertThatThrownBy(() -> handler.handleEvent(invalidPayload))
                 .isInstanceOf(JsonProcessingException.class);
     }
 

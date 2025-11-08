@@ -8,12 +8,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
-import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.IssueEvent;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Project;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.User;
+import ru.z3r0ing.gitlabnotificator.model.telegram.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.util.MessageFormatter;
 
 import java.util.List;
@@ -52,21 +52,21 @@ class IssueEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldReturnEmptyListForClosedIssue() throws JsonProcessingException {
+    void handleClosedIssue() throws JsonProcessingException {
         // Given
         IssueEvent event = createBasicIssueEvent();
         event.getIssue().setState("closed");
         String payload = objectMapper.writeValueAsString(event);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).isEmpty();
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleOpenIssue() throws JsonProcessingException {
+    void handleEvent_ShouldHandleOpenIssue() throws JsonProcessingException {
         // Given
         IssueEvent event = createBasicIssueEvent();
         event.getIssue().setState("opened");
@@ -79,7 +79,7 @@ class IssueEventHandlerTest {
         when(messageFormatter.buttonsForIssue("http://gitlab/issue/1")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(2);
@@ -91,7 +91,7 @@ class IssueEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldReturnEmptyListForNonOpenAction() throws JsonProcessingException {
+    void handleNonOpenAction() throws JsonProcessingException {
         // Given
         IssueEvent event = createBasicIssueEvent();
         event.getIssue().setState("opened");
@@ -99,7 +99,7 @@ class IssueEventHandlerTest {
         String payload = objectMapper.writeValueAsString(event);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).isEmpty();
@@ -108,12 +108,12 @@ class IssueEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleInvalidJson() {
+    void handleEvent_ShouldHandleInvalidJson() {
         // Given
         String invalidPayload = "invalid json";
 
         // When & Then
-        assertThatThrownBy(() -> handler.formatMessageForEvent(invalidPayload))
+        assertThatThrownBy(() -> handler.handleEvent(invalidPayload))
                 .isInstanceOf(JsonProcessingException.class);
     }
 

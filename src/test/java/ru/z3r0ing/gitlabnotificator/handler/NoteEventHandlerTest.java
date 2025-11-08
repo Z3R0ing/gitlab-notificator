@@ -8,13 +8,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
-import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.NoteEvent;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.MergeRequest;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Note;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Project;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.User;
+import ru.z3r0ing.gitlabnotificator.model.telegram.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.util.MessageFormatter;
 
 import java.util.Collections;
@@ -53,35 +53,35 @@ class NoteEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldReturnEmptyListForNonMergeRequestNotes() throws JsonProcessingException {
+    void handleNonMergeRequestNotes() throws JsonProcessingException {
         // Given
         NoteEvent event = createBasicNoteEvent();
         event.getNote().setNoteableType("issue"); // Not a merge request
         String payload = objectMapper.writeValueAsString(event);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).isEmpty();
     }
 
     @Test
-    void formatMessageForEvent_ShouldReturnEmptyListWhenMergeRequestIsNull() throws JsonProcessingException {
+    void handleEvent_ShouldReturnEmptyListWhenMergeRequestIsNull() throws JsonProcessingException {
         // Given
         NoteEvent event = createBasicNoteEvent();
         event.setMergeRequest(null); // No merge request data
         String payload = objectMapper.writeValueAsString(event);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).isEmpty();
     }
 
     @Test
-    void formatMessageForEvent_ShouldNotifyAssigneeAndReviewers() throws JsonProcessingException {
+    void handleEvent_ShouldNotifyAssigneeAndReviewers() throws JsonProcessingException {
         // Given
         NoteEvent event = createBasicNoteEvent();
 
@@ -108,7 +108,7 @@ class NoteEventHandlerTest {
         when(messageFormatter.buttonsForNote("http://gitlab/test")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(3); // assignee + 2 reviewers
@@ -119,7 +119,7 @@ class NoteEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldSkipAssigneeWhenSameAsAuthor() throws JsonProcessingException {
+    void handleEvent_ShouldSkipAssigneeWhenSameAsAuthor() throws JsonProcessingException {
         // Given
         NoteEvent event = createBasicNoteEvent();
 
@@ -143,7 +143,7 @@ class NoteEventHandlerTest {
         when(messageFormatter.buttonsForNote("http://gitlab/test")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(1); // Only reviewer should be notified
@@ -151,7 +151,7 @@ class NoteEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldSkipReviewerWhenSameAsAuthor() throws JsonProcessingException {
+    void handleEvent_ShouldSkipReviewerWhenSameAsAuthor() throws JsonProcessingException {
         // Given
         NoteEvent event = createBasicNoteEvent();
 
@@ -175,7 +175,7 @@ class NoteEventHandlerTest {
         when(messageFormatter.buttonsForNote("http://gitlab/test")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(1); // Only assignee should be notified
@@ -183,7 +183,7 @@ class NoteEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleNoAssignee() throws JsonProcessingException {
+    void handleEvent_ShouldHandleNoAssignee() throws JsonProcessingException {
         // Given
         NoteEvent event = createBasicNoteEvent();
         event.getMergeRequest().setAssignee(null); // No assignee
@@ -202,7 +202,7 @@ class NoteEventHandlerTest {
         when(messageFormatter.buttonsForNote("http://gitlab/test")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(1); // Only reviewer should be notified
@@ -210,7 +210,7 @@ class NoteEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleNoReviewers() throws JsonProcessingException {
+    void handleEvent_ShouldHandleNoReviewers() throws JsonProcessingException {
         // Given
         NoteEvent event = createBasicNoteEvent();
         event.getMergeRequest().setReviewers(null); // No reviewers
@@ -229,7 +229,7 @@ class NoteEventHandlerTest {
         when(messageFormatter.buttonsForNote("http://gitlab/test")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(1); // Only assignee should be notified
@@ -237,7 +237,7 @@ class NoteEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleEmptyReviewersList() throws JsonProcessingException {
+    void handleEvent_ShouldHandleEmptyReviewersList() throws JsonProcessingException {
         // Given
         NoteEvent event = createBasicNoteEvent();
         event.getMergeRequest().setReviewers(Collections.emptyList()); // Empty reviewers list
@@ -256,7 +256,7 @@ class NoteEventHandlerTest {
         when(messageFormatter.buttonsForNote("http://gitlab/test")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(1); // Only assignee should be notified
@@ -264,12 +264,12 @@ class NoteEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleInvalidJson() {
+    void handleEvent_ShouldHandleInvalidJson() {
         // Given
         String invalidPayload = "invalid json";
 
         // When & Then
-        assertThatThrownBy(() -> handler.formatMessageForEvent(invalidPayload))
+        assertThatThrownBy(() -> handler.handleEvent(invalidPayload))
                 .isInstanceOf(JsonProcessingException.class);
     }
 

@@ -26,7 +26,7 @@ public class GitlabEventService {
     private final UserMappingRepository userMappingRepository;
     private final ApplicationContext applicationContext;
 
-    public void handleEvent(String eventTypeRaw, String payload) {
+    public void handleGitlabEvent(String eventTypeRaw, String payload) {
         EventType eventType;
         try {
             eventType = EventType.fromRequestHeader(eventTypeRaw);
@@ -41,7 +41,7 @@ public class GitlabEventService {
         for (EventHandler eventHandler : eventHandlers) {
             if (eventHandler.doesSupportSuchEvent(eventType)) {
                 try {
-                    List<HandledEvent> handledEventList = eventHandler.formatMessageForEvent(payload);
+                    List<HandledEvent> handledEventList = eventHandler.handleEvent(payload);
                     handledEventList.forEach(this::sendEventNotification);
                 } catch (JsonProcessingException e) {
                     log.error("Error processing GitLab event payload for event type: {}", eventType, e);

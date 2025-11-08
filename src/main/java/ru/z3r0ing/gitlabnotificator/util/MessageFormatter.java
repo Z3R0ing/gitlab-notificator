@@ -1,7 +1,7 @@
 package ru.z3r0ing.gitlabnotificator.util;
 
 import org.springframework.stereotype.Component;
-import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
+import ru.z3r0ing.gitlabnotificator.model.telegram.InlineKeyboardButtonRow;
 
 import java.util.Collections;
 import java.util.List;

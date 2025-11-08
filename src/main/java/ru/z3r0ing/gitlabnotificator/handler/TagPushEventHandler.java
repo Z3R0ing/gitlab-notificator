@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
-import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
-import ru.z3r0ing.gitlabnotificator.model.MessageWithKeyboard;
 import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.TagPushEvent;
+import ru.z3r0ing.gitlabnotificator.model.telegram.InlineKeyboardButtonRow;
+import ru.z3r0ing.gitlabnotificator.model.telegram.MessageWithKeyboard;
 import ru.z3r0ing.gitlabnotificator.util.MessageFormatter;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class TagPushEventHandler implements EventHandler {
     private final MessageFormatter messageFormatter;
 
     @Override
-    public List<HandledEvent> formatMessageForEvent(String payload) throws JsonProcessingException {
+    public List<HandledEvent> handleEvent(String payload) throws JsonProcessingException {
         TagPushEvent tagPushEvent = mapper.readValue(payload, TagPushEvent.class);
 
         String projectName = tagPushEvent.getProject().getName();

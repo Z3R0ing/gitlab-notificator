@@ -37,7 +37,7 @@ public class GitlabWebhookController {
             log.debug("GitLab webhook payload: {}", payload);
         }
 
-        gitlabEventService.handleEvent(eventType, payload);
+        gitlabEventService.handleGitlabEvent(eventType, payload);
 
         return ResponseEntity.ok().build();
     }

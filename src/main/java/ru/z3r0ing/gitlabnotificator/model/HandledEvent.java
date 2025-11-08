@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.lang.Nullable;
+import ru.z3r0ing.gitlabnotificator.model.telegram.MessageWithKeyboard;
 
 @Data
 @Builder

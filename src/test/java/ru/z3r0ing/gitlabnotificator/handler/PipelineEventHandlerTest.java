@@ -8,13 +8,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
-import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.PipelineEvent;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Pipeline;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Project;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.User;
+import ru.z3r0ing.gitlabnotificator.model.telegram.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.util.MessageFormatter;
 
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ class PipelineEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleFailedPipelineWithoutMergeRequest() throws JsonProcessingException {
+    void handleEvent_ShouldHandleFailedPipelineWithoutMergeRequest() throws JsonProcessingException {
         // Given
         PipelineEvent event = createBasicPipelineEvent();
         event.getPipeline().setStatus("failed");
@@ -68,7 +68,7 @@ class PipelineEventHandlerTest {
         when(messageFormatter.buttonsForPipeline("http://gitlab/pipeline/1")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(1);
@@ -78,7 +78,7 @@ class PipelineEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleSuccessfulDeployPipeline() throws JsonProcessingException {
+    void handleEvent_ShouldHandleSuccessfulDeployPipeline() throws JsonProcessingException {
         // Given
         PipelineEvent event = createBasicPipelineEvent();
         event.getPipeline().setStatus("success");
@@ -96,7 +96,7 @@ class PipelineEventHandlerTest {
         when(messageFormatter.buttonsForPipeline("http://gitlab/pipeline/1")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(3);
@@ -111,7 +111,7 @@ class PipelineEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldNotHandleSuccessfulNonDeployPipeline() throws JsonProcessingException {
+    void handleEvent_ShouldNotHandleSuccessfulNonDeployPipeline() throws JsonProcessingException {
         // Given
         PipelineEvent event = createBasicPipelineEvent();
         event.getPipeline().setStatus("success");
@@ -127,7 +127,7 @@ class PipelineEventHandlerTest {
         when(messageFormatter.buttonsForPipeline("http://gitlab/pipeline/1")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).isEmpty();
@@ -136,7 +136,7 @@ class PipelineEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldNotHandleOtherPipelineStatuses() throws JsonProcessingException {
+    void handleEvent_ShouldNotHandleOtherPipelineStatuses() throws JsonProcessingException {
         // Given
         PipelineEvent event = createBasicPipelineEvent();
         event.getPipeline().setStatus("running");
@@ -147,7 +147,7 @@ class PipelineEventHandlerTest {
         when(messageFormatter.buttonsForPipeline("http://gitlab/pipeline/1")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).isEmpty();
@@ -157,12 +157,12 @@ class PipelineEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleInvalidJson() {
+    void handleEvent_ShouldHandleInvalidJson() {
         // Given
         String invalidPayload = "invalid json";
 
         // When & Then
-        assertThatThrownBy(() -> handler.formatMessageForEvent(invalidPayload))
+        assertThatThrownBy(() -> handler.handleEvent(invalidPayload))
                 .isInstanceOf(JsonProcessingException.class);
     }
 

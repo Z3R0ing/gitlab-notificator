@@ -9,10 +9,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
 import ru.z3r0ing.gitlabnotificator.handler.EventHandler;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
-import ru.z3r0ing.gitlabnotificator.model.MessageWithKeyboard;
 import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.entity.UserMapping;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
+import ru.z3r0ing.gitlabnotificator.model.telegram.MessageWithKeyboard;
 import ru.z3r0ing.gitlabnotificator.repository.UserMappingRepository;
 
 import java.util.Arrays;
@@ -44,104 +44,104 @@ class GitlabEventServiceTest {
     private GitlabEventService gitlabEventService;
 
     @Test
-    void handleEvent_UnsupportedEventType_ShouldLogWarning() {
+    void handleEvent_UnsupportedGitlabEventType_ShouldLogWarning() {
         String unsupportedEventType = "UNSUPPORTED_EVENT";
         String payload = "{}";
 
-        gitlabEventService.handleEvent(unsupportedEventType, payload);
+        gitlabEventService.handleGitlabEvent(unsupportedEventType, payload);
 
         verifyNoInteractions(telegramService);
     }
 
     @Test
-    void handleEvent_SupportedEventType_NoHandlers_ShouldDoNothing() {
+    void handleEvent_SupportedGitlabEventType_NoHandlers_ShouldDoNothing() {
         String eventType = EventType.ISSUE.getRequestHeader();
         String payload = "{}";
         when(applicationContext.getBeansOfType(EventHandler.class)).thenReturn(Collections.emptyMap());
 
-        gitlabEventService.handleEvent(eventType, payload);
+        gitlabEventService.handleGitlabEvent(eventType, payload);
 
         verifyNoInteractions(telegramService);
     }
 
     @Test
-    void handleEvent_HandlerThrowsJsonProcessingException_ShouldLogError() throws JsonProcessingException {
+    void handleGitlabEvent_HandlerThrowsJsonProcessingException_ShouldLogError() throws JsonProcessingException {
         String eventType = EventType.ISSUE.getRequestHeader();
         String payload = "invalid_json";
         EventHandler mockHandler = mock(EventHandler.class);
         when(mockHandler.doesSupportSuchEvent(EventType.ISSUE)).thenReturn(true);
-        when(mockHandler.formatMessageForEvent(payload)).thenThrow(JsonProcessingException.class);
+        when(mockHandler.handleEvent(payload)).thenThrow(JsonProcessingException.class);
         when(applicationContext.getBeansOfType(EventHandler.class))
                 .thenReturn(Collections.singletonMap("issueHandler", mockHandler));
 
-        gitlabEventService.handleEvent(eventType, payload);
+        gitlabEventService.handleGitlabEvent(eventType, payload);
 
         verifyNoInteractions(telegramService);
     }
 
     @Test
-    void handleEvent_ValidEventHandler_ShouldSendNotifications() throws JsonProcessingException {
+    void handleEvent_ValidGitlabEventHandler_ShouldSendNotifications() throws JsonProcessingException {
         String eventType = EventType.ISSUE.getRequestHeader();
         String payload = "{}";
         HandledEvent handledEvent = new HandledEvent(UserRole.LEAD, new MessageWithKeyboard("test", Collections.emptyList()));
         EventHandler mockHandler = mock(EventHandler.class);
         when(mockHandler.doesSupportSuchEvent(EventType.ISSUE)).thenReturn(true);
-        when(mockHandler.formatMessageForEvent(payload)).thenReturn(Collections.singletonList(handledEvent));
+        when(mockHandler.handleEvent(payload)).thenReturn(Collections.singletonList(handledEvent));
         when(applicationContext.getBeansOfType(EventHandler.class))
                 .thenReturn(Collections.singletonMap("issueHandler", mockHandler));
         when(userMappingRepository.findAllByRole(UserRole.LEAD))
                 .thenReturn(Collections.singletonList(new UserMapping(1L, 100L, 200L, UserRole.LEAD)));
 
-        gitlabEventService.handleEvent(eventType, payload);
+        gitlabEventService.handleGitlabEvent(eventType, payload);
 
         verify(telegramService, times(1))
                 .sendMarkdownMessage(eq(100L), eq("test"), anyList());
     }
 
     @Test
-    void handleEvent_UserMappingNotFound_ShouldLogWarning() throws JsonProcessingException {
+    void handleGitlabEvent_UserMappingNotFound_ShouldLogWarning() throws JsonProcessingException {
         String eventType = EventType.NOTE.getRequestHeader();
         String payload = "{}";
         HandledEvent handledEvent = new HandledEvent(999L, new MessageWithKeyboard("test", Collections.emptyList()));
         EventHandler mockHandler = mock(EventHandler.class);
         when(mockHandler.doesSupportSuchEvent(EventType.NOTE)).thenReturn(true);
-        when(mockHandler.formatMessageForEvent(payload)).thenReturn(Collections.singletonList(handledEvent));
+        when(mockHandler.handleEvent(payload)).thenReturn(Collections.singletonList(handledEvent));
         when(applicationContext.getBeansOfType(EventHandler.class))
                 .thenReturn(Collections.singletonMap("noteHandler", mockHandler));
         when(userMappingRepository.findByGitlabUserId(999L)).thenReturn(Optional.empty());
 
-        gitlabEventService.handleEvent(eventType, payload);
+        gitlabEventService.handleGitlabEvent(eventType, payload);
 
         verify(telegramService, never()).sendMarkdownMessage(anyLong(), anyString(), anyList());
     }
 
     @Test
-    void handleEvent_WithUserReceiver_ShouldSendToSpecificUser() throws JsonProcessingException {
+    void handleGitlabEvent_WithUserReceiver_ShouldSendToSpecificUser() throws JsonProcessingException {
         String eventType = EventType.NOTE.getRequestHeader();
         String payload = "{}";
         HandledEvent handledEvent = new HandledEvent(100L, new MessageWithKeyboard("test", Collections.emptyList()));
         EventHandler mockHandler = mock(EventHandler.class);
         when(mockHandler.doesSupportSuchEvent(EventType.NOTE)).thenReturn(true);
-        when(mockHandler.formatMessageForEvent(payload)).thenReturn(Collections.singletonList(handledEvent));
+        when(mockHandler.handleEvent(payload)).thenReturn(Collections.singletonList(handledEvent));
         when(applicationContext.getBeansOfType(EventHandler.class))
                 .thenReturn(Collections.singletonMap("noteHandler", mockHandler));
         UserMapping userMapping = new UserMapping(1L, 200L, 100L, UserRole.DEV);
         when(userMappingRepository.findByGitlabUserId(100L)).thenReturn(Optional.of(userMapping));
 
-        gitlabEventService.handleEvent(eventType, payload);
+        gitlabEventService.handleGitlabEvent(eventType, payload);
 
         verify(telegramService, times(1))
                 .sendMarkdownMessage(eq(200L), eq("test"), anyList());
     }
 
     @Test
-    void handleEvent_WithoutUserReceiver_ShouldSendToLeads() throws JsonProcessingException {
+    void handleGitlabEvent_WithoutUserReceiver_ShouldSendToLeads() throws JsonProcessingException {
         String eventType = EventType.ISSUE.getRequestHeader();
         String payload = "{}";
         HandledEvent handledEvent = new HandledEvent(UserRole.LEAD, new MessageWithKeyboard("test", Collections.emptyList()));
         EventHandler mockHandler = mock(EventHandler.class);
         when(mockHandler.doesSupportSuchEvent(EventType.ISSUE)).thenReturn(true);
-        when(mockHandler.formatMessageForEvent(payload)).thenReturn(Collections.singletonList(handledEvent));
+        when(mockHandler.handleEvent(payload)).thenReturn(Collections.singletonList(handledEvent));
         when(applicationContext.getBeansOfType(EventHandler.class))
                 .thenReturn(Collections.singletonMap("issueHandler", mockHandler));
         List<UserMapping> leads = Arrays.asList(
@@ -150,7 +150,7 @@ class GitlabEventServiceTest {
         );
         when(userMappingRepository.findAllByRole(UserRole.LEAD)).thenReturn(leads);
 
-        gitlabEventService.handleEvent(eventType, payload);
+        gitlabEventService.handleGitlabEvent(eventType, payload);
 
         verify(telegramService, times(1))
                 .sendMarkdownMessage(eq(100L), eq("test"), anyList());

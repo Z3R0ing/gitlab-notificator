@@ -8,11 +8,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.z3r0ing.gitlabnotificator.model.HandledEvent;
-import ru.z3r0ing.gitlabnotificator.model.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.model.UserRole;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.event.TagPushEvent;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Project;
+import ru.z3r0ing.gitlabnotificator.model.telegram.InlineKeyboardButtonRow;
 import ru.z3r0ing.gitlabnotificator.util.MessageFormatter;
 
 import java.util.List;
@@ -51,7 +51,7 @@ class TagPushEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleTagPushEvent() throws JsonProcessingException {
+    void handleEvent_ShouldHandleTagPushEvent() throws JsonProcessingException {
         // Given
         TagPushEvent event = createBasicTagPushEvent();
         String payload = objectMapper.writeValueAsString(event);
@@ -62,7 +62,7 @@ class TagPushEventHandlerTest {
         when(messageFormatter.buttonsForTag("http://gitlab/-/tags/v1.0.0")).thenReturn(keyboard);
 
         // When
-        List<HandledEvent> result = handler.formatMessageForEvent(payload);
+        List<HandledEvent> result = handler.handleEvent(payload);
 
         // Then
         assertThat(result).hasSize(2);
@@ -75,12 +75,12 @@ class TagPushEventHandlerTest {
     }
 
     @Test
-    void formatMessageForEvent_ShouldHandleInvalidJson() {
+    void handleEvent_ShouldHandleInvalidJson() {
         // Given
         String invalidPayload = "invalid json";
 
         // When & Then
-        assertThatThrownBy(() -> handler.formatMessageForEvent(invalidPayload))
+        assertThatThrownBy(() -> handler.handleEvent(invalidPayload))
                 .isInstanceOf(JsonProcessingException.class);
     }
 
