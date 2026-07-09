@@ -6,8 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Issue;
+import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Label;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.Project;
 import ru.z3r0ing.gitlabnotificator.model.gitlab.object.User;
+
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -22,6 +25,8 @@ public class IssueEvent extends AbstractEvent {
 
     @JsonProperty("object_attributes")
     private Issue issue;
+
+    private List<Label> labels;
 
     @Override
     @JsonIgnore

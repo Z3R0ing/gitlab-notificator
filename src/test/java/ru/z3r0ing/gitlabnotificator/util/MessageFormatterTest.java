@@ -3,9 +3,13 @@ package ru.z3r0ing.gitlabnotificator.util;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.z3r0ing.gitlabnotificator.model.telegram.InlineKeyboardButtonRow;
+import ru.z3r0ing.gitlabnotificator.validation.model.GroupCardinalityViolation;
+import ru.z3r0ing.gitlabnotificator.validation.model.UnknownLabelViolation;
+import ru.z3r0ing.gitlabnotificator.validation.model.Violation;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -77,5 +81,37 @@ class MessageFormatterTest {
         // Then
         assertNotNull(buttons);
         assertTrue(buttons.isEmpty());
+    }
+
+    @Test
+    void formatLabelViolations_ShouldContainIssueTitleAndAllViolationLines() {
+        List<Violation> violations = List.of(
+                new GroupCardinalityViolation("Status", List.of("S:Review", "S:Testing"), 1, 1, 2),
+                new GroupCardinalityViolation("Type", List.of(), 1, 1, 0),
+                new UnknownLabelViolation(List.of("В работе")));
+
+        String message = messageFormatter.formatLabelViolations("smartdebt", "Test issue", violations);
+
+        assertThat(message).contains("Test issue");
+        assertThat(message).contains("Status").contains("S:Review").contains("S:Testing");
+        assertThat(message).contains("Type");
+        assertThat(message).contains("В работе");
+        assertThat(message).contains("at most 1 allowed");
+        assertThat(message).contains("at least 1 required");
+        assertThat(message).contains("Labels outside the system: В работе");
+    }
+
+    @Test
+    void formatLabelViolationsEscalated_ShouldMentionNotifiedUserAndDelay() {
+        List<Violation> violations = List.of(
+                new GroupCardinalityViolation("Status", List.of(), 1, 1, 0));
+
+        String message = messageFormatter.formatLabelViolationsEscalated(
+                "smartdebt", "Test issue", violations, "Roman Petrov", "1h");
+
+        assertThat(message).contains("Roman Petrov");
+        assertThat(message).contains("1h");
+        assertThat(message).contains("Status");
+        assertThat(message).contains("at least 1 required");
     }
 }

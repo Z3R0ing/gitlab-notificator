@@ -22,6 +22,10 @@ A Spring Boot application that sends real-time notifications from GitLab to Tele
     - Inline buttons for quick access to GitLab objects
     - Customizable notification settings
 
+- **Label validation**: declarative label rules (`label-rules.yml`) - group
+  cardinality and unknown-label checks with debounced notifications to the change author
+  and escalation to team lead
+
 ## How It Works
 
 1. The application receives webhook events from GitLab
@@ -68,6 +72,13 @@ export SPRING_DATASOURCE_URL=your_postgre_jdbc_url
 export SPRING_DATASOURCE_USERNAME=your_postgre_username
 export SPRING_DATASOURCE_PASSWORD=your_postgre_password
 ```
+
+4. (Optional) Label validation rules:
+
+Label validation for GitLab issues is configured in `label-rules.yml` (bundled defaults in
+`src/main/resources/label-rules.yml`). To override without rebuilding, mount your own file and
+point `LABEL_RULES_PATH` at it (see the commented volume in `docker-compose.yaml`). Invalid
+rules fail application startup. Disable the whole subsystem with `label-rules.enabled=false`.
 
 ### Running the Application
 

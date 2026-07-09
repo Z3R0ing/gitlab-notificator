@@ -2,9 +2,13 @@ package ru.z3r0ing.gitlabnotificator.util;
 
 import org.springframework.stereotype.Component;
 import ru.z3r0ing.gitlabnotificator.model.telegram.InlineKeyboardButtonRow;
+import ru.z3r0ing.gitlabnotificator.validation.model.GroupCardinalityViolation;
+import ru.z3r0ing.gitlabnotificator.validation.model.UnknownLabelViolation;
+import ru.z3r0ing.gitlabnotificator.validation.model.Violation;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class MessageFormatter {
@@ -181,6 +185,71 @@ public class MessageFormatter {
                 Pipeline: *%s*
                 Deployment completed
                 """, projectName, pipelineName);
+    }
+
+    /**
+     * Format message about label rule violations for the change author
+     *
+     * @param projectName project name
+     * @param issueTitle  issue title
+     * @param violations  violations found by the validation engine
+     * @return formatted message text
+     */
+    public String formatLabelViolations(String projectName, String issueTitle, List<Violation> violations) {
+        return String.format("""
+                ⚠️ *Label problems on issue!*
+
+                Project: _%s_
+                Issue: *%s*
+
+                %s""", projectName, issueTitle, formatViolationLines(violations));
+    }
+
+    /**
+     * Format escalation message for LEAD about violations not fixed in time
+     *
+     * @param projectName         project name
+     * @param issueTitle          issue title
+     * @param violations          violations still present
+     * @param notifiedUserName    who received the first notification (or "unknown")
+     * @param escalationDelayText human-readable escalation delay, e.g. "1h"
+     * @return formatted message text
+     */
+    public String formatLabelViolationsEscalated(String projectName, String issueTitle,
+                                                 List<Violation> violations,
+                                                 String notifiedUserName, String escalationDelayText) {
+        return String.format("""
+                🚨 *Label violations not fixed in %s!*
+
+                Project: _%s_
+                Issue: *%s*
+                First notified: %s
+
+                %s""", escalationDelayText, projectName, issueTitle, notifiedUserName,
+                formatViolationLines(violations));
+    }
+
+    private String formatViolationLines(List<Violation> violations) {
+        return violations.stream()
+                .map(this::formatViolationLine)
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String formatViolationLine(Violation violation) {
+        if (violation instanceof GroupCardinalityViolation cardinality) {
+            if (cardinality.max() != null && cardinality.actual() > cardinality.max()) {
+                return String.format("• Group *%s*: %d active labels (%s), at most %d allowed",
+                        cardinality.groupName(), cardinality.actual(),
+                        String.join(", ", cardinality.matchedLabels()), cardinality.max());
+            }
+            return String.format("• Group *%s*: %d label(s), at least %d required",
+                    cardinality.groupName(), cardinality.actual(), cardinality.min());
+        }
+        if (violation instanceof UnknownLabelViolation unknown) {
+            return String.format("• Labels outside the system: %s",
+                    String.join(", ", unknown.unknownLabels()));
+        }
+        return "• " + violation;
     }
 
     /**
