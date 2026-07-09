@@ -11,5 +11,9 @@ services:
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - LABEL_RULES_PATH=${LABEL_RULES_PATH:-/config/label-rules.yml}
     ports:
       - ${HOST_IP}:${HOST_PORT}:8080
+    # mount to override the built-in label validation rules:
+    # volumes:
+    #   - ./label-rules.yml:/config/label-rules.yml:ro

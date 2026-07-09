@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: gitlab-notificator
+  config:
+    import:
+      - optional:classpath:label-rules.yml
+      - optional:file:${LABEL_RULES_PATH:./label-rules.yml}
   datasource:
     url: jdbc:h2:file:./data/gitlabnotificator;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
     driverClassName: org.h2.Driver
