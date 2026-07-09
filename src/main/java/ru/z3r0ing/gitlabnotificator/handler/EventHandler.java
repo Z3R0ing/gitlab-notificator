@@ -6,13 +6,20 @@ import ru.z3r0ing.gitlabnotificator.model.gitlab.event.EventType;
 
 import java.util.List;
 
+/**
+ * Subscriber to GitLab webhook event types.
+ * Every handler whose doesSupportSuchEvent() returns true receives the event,
+ * independently and in unspecified order. An exception thrown by one handler
+ * does not affect the others.
+ */
 public interface EventHandler {
 
     /**
-     * Formats messages based on the merge request event type.
+     * Processes the raw webhook payload.
+     * May have deferred side effects (e.g. scheduling later work).
      *
-     * @param payload JSON string containing the merge request event data
-     * @return List of HandledEvent objects containing formatted messages and recipient information
+     * @param payload JSON string with the GitLab event data
+     * @return notifications to send immediately; may be empty
      * @throws JsonProcessingException if payload cannot be parsed
      */
     List<HandledEvent> handleEvent(String payload) throws JsonProcessingException;
@@ -21,7 +28,7 @@ public interface EventHandler {
      * Checks if this handler supports the given event type.
      *
      * @param eventType the type of event to check
-     * @return true if this handler supports MERGE_REQUEST events, false otherwise
+     * @return true if this handler wants to receive events of this type
      */
     boolean doesSupportSuchEvent(EventType eventType);
 
